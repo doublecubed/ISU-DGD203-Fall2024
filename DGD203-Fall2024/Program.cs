@@ -6,7 +6,7 @@ namespace FirstGame
     {
         static void Main(string[] args)
         {
-            GameController controller = new GameController();
+            Game controller = new Game();
             controller.StartGame();
         }
     }
