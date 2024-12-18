@@ -1,0 +1,9 @@
+Everglade
+0,1
+A dangerous forest with animals roaming in.
+branch,arrow,coin
+-
+Neverglade
+0,0
+A calm and interesting place that does not exist.
+

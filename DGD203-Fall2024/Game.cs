@@ -1,9 +1,17 @@
-using FirstGame.Engines;
-
 namespace FirstGame;
 
 public class Game
 {
+    #region REFERENCES
+    
+    private Player _player;
+    private GameMap _map;
+    private Commands _commands;
+    private Inventory _inventory;
+    public SaveManager SaveManager;
+    
+    #endregion
+    
     #region VARIABLES
     
     #region Constant Variables
@@ -13,18 +21,21 @@ public class Game
 
     private const string NewCommandSeparator = "--------------------------";
     
-    #endregion
-    
     public static readonly Vector2Int DefaultStartingCoordinates = new Vector2Int { X = 0, Y = 0 };
     
-    private Player _player;
-    private GameMap _map;
-
-    // GameState variables
+    #endregion
+    
+    #region Game State Variables
+    
     private bool _isRunning;
     
-    // Command variables
+    #endregion
+    
+    #region Command Variables
+    
     private string _currentCommand;
+    
+    #endregion
     
     #endregion
     
@@ -32,7 +43,10 @@ public class Game
     
     public Game()
     {
-        _player = new Player();
+        GenerateMap();
+        GenerateInventory();
+        GenerateStartingInstances();
+        CheckForLoadGame();
     }
 
     #endregion
@@ -43,18 +57,29 @@ public class Game
     
     public void StartGame()
     {
-        GenerateMap();
         GetPlayerName();
-        StartGameLoop();
 
+        StartGameLoop();
         GameLoop();
         
         // This will run only after the game ends
     }
 
+    private void GenerateStartingInstances()
+    {
+        SaveManager = new SaveManager(this);
+        _commands = new Commands(this, _map, SaveManager);
+        _player = new Player();
+    }
+    
     private void GenerateMap()
     {
-        _map = new GameMap(MapWidth, MapHeight, DefaultStartingCoordinates);
+        _map = new GameMap(this, MapWidth, MapHeight, DefaultStartingCoordinates);
+    }
+
+    private void GenerateInventory()
+    {
+        _inventory = new Inventory(this);
     }
     
     private void GetPlayerName()
@@ -72,6 +97,20 @@ public class Game
 
         Console.WriteLine($"Welcome, {_player.Name}, to this game");
     }
+
+    private void CheckForLoadGame()
+    {
+        if (SaveManager.SaveFileExists())
+        {
+            Console.WriteLine("Save file found. Do you want to load the game? Y/N");
+            string answer = Console.ReadLine();
+            if (answer != null && answer.ToLower() == "y")
+            {
+                SaveManager.LoadGame();
+            }
+        }
+        
+    }
     
     #endregion
     
@@ -80,6 +119,7 @@ public class Game
     private void StartGameLoop()
     {
         _isRunning = true;
+        // something extra
     }
 
     private void GameLoop()
@@ -88,7 +128,6 @@ public class Game
         {
             ReceiveCommand();
             ApplyCommand();
-            CheckIfGameOver();
         }
     }
 
@@ -101,45 +140,14 @@ public class Game
 
     private void ApplyCommand()
     {
-        if (ExitCommandGiven())
-        {
-            _isRunning = false;
-            return;
-        }
-        
-        ProcessMapCommand();
-        ProcessInventoryCommand();
-    }
-
-    private void CheckIfGameOver()
-    {
-        
-    }
-
-    private string CurrentLocationDescription()
-    {
-        GameMap.Location currentLocation = _map.GetCurrentLocation();
-        return currentLocation.Description;
-    }
-
-    private bool ExitCommandGiven()
-    {
-        return _currentCommand.ToLower() == "exit";
-    }
-
-    private void ProcessMapCommand()
-    {
-        _map.MovePlayer(_currentCommand);
-        Vector2Int playerPosition = _map.GetPlayerPosition();
-        Console.WriteLine($"You are at {playerPosition.X}, {playerPosition.Y}");
-        Console.WriteLine(CurrentLocationDescription());
-    }
-
-    private void ProcessInventoryCommand()
-    {
-        
+        _commands.ExecuteCommand(_currentCommand);
     }
     
+    public void GiveExitCommand()
+    {
+        _isRunning = false;
+    }
+   
     #endregion
     
     #endregion

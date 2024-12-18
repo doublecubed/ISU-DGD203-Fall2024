@@ -4,6 +4,12 @@ using FirstGame;
 
 public class GameMap
 {
+    #region REFERENCES
+
+    private Game _game;
+    
+    #endregion
+    
     #region VARIABLES
 
     private const int DefaultWidth = 5;
@@ -19,8 +25,11 @@ public class GameMap
     #region INTERNAL CLASSES
     public class Location
     {
+        public string Name { get; set; }
         public string Description { get; set; }
         public bool IsAccessible { get; set; }
+        
+        public List<Item> Items { get; set; }
         public Dictionary<string, string> InteractiveObjects { get; set; }
 
         public Location(string description = "There's nothing here", bool isAccessible = true)
@@ -28,6 +37,7 @@ public class GameMap
             Description = description;
             IsAccessible = isAccessible;
             InteractiveObjects = new Dictionary<string, string>();
+            Items = new List<Item>();
         }
     }
 
@@ -35,15 +45,26 @@ public class GameMap
     
     #region CONSTRUCTOR
     
-    public GameMap(int width, int height, Vector2Int startPosition)
+    public GameMap(Game game, int width, int height, Vector2Int startPosition)
     {
+        _game = game;
+        
         CheckInputDimensions(ref width, ref height);
 
         _width = width;
         _height = height;
         _mapLocations = new Location[width, height];
 
-        // Initialize all locations with default values
+        if (_game.SaveManager.SaveFileExists())
+        {
+            // TODO: Load the locations from the save file
+        }
+        else
+        {
+            // TODO: Load the default locations
+        }
+        
+        /* Initialize all locations with default values
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -51,6 +72,7 @@ public class GameMap
                 _mapLocations[x, y] = new Location();
             }
         }
+        */
 
         // Set initial player position if valid
         if (IsValidPosition(startPosition))
@@ -86,7 +108,7 @@ public class GameMap
     }
     */
 
-    public bool MovePlayer(string direction)
+    public bool MovePlayer(Direction direction)
     {
         var newPosition = CalculateNewPosition(direction);
         
@@ -98,7 +120,7 @@ public class GameMap
         return false;
     }
 
-    private Vector2Int CalculateNewPosition(string direction)
+    private Vector2Int CalculateNewPosition(Direction direction)
     {
         // switch chooses from the possible cases, and then does the code inside.
         // It is a version of if for limited case scenarios
@@ -106,18 +128,18 @@ public class GameMap
         Vector2Int newPosition = new Vector2Int();
         newPosition = _playerPosition;
         
-        switch (direction.ToLower())
+        switch (direction)
         {
-            case "north":
+            case Direction.North:
                 newPosition.Y += 1;
                 break;
-            case "south":
+            case Direction.South:
                 newPosition.Y -= 1;
                 break;
-            case "west":
+            case Direction.West:
                 newPosition.X -= 1;
                 break;
-            case "east":
+            case Direction.East:
                 newPosition.X += 1;
                 break;
             default:
@@ -164,4 +186,33 @@ public class GameMap
     }
     
     #endregion
+}
+
+public enum Direction
+{
+    East,
+    North,
+    West,
+    South,
+    NorthEast,
+    NorthWest,
+    SouthEast,
+    SouthWest,
+    Up,
+    Down,
+    Inside,
+    Outside,
+    Right,
+    Forward,
+    Left,
+    Back
+}
+
+public struct MapLocationLoadData
+{
+    public Vector2Int Coordinates;
+    public string Name;
+    public string Description;
+    public bool IsAccessible;
+    public Item[] Items;
 }
