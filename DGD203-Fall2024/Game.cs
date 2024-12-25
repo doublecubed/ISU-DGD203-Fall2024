@@ -8,7 +8,7 @@ public class Game
     private GameMap _map;
     private Commands _commands;
     private Inventory _inventory;
-    public SaveManager SaveManager;
+    private SaveManager _saveManager;
     
     #endregion
     
@@ -44,8 +44,8 @@ public class Game
     public Game()
     {
         GenerateMap();
-        GenerateInventory();
         GenerateStartingInstances();
+        InitializeStartingInstances();
         CheckForLoadGame();
     }
 
@@ -67,19 +67,21 @@ public class Game
 
     private void GenerateStartingInstances()
     {
-        SaveManager = new SaveManager(this);
-        _commands = new Commands(this, _map, SaveManager);
         _player = new Player();
+        _inventory = new Inventory(this);
+        _saveManager = new SaveManager(this);
+        _commands = new Commands(this);
+    }
+
+    private void InitializeStartingInstances()
+    {
+        _saveManager.Initialize(_player, _map);
+        _commands.Initialize(_map, _saveManager, _player);
     }
     
     private void GenerateMap()
     {
         _map = new GameMap(this, MapWidth, MapHeight, DefaultStartingCoordinates);
-    }
-
-    private void GenerateInventory()
-    {
-        _inventory = new Inventory(this);
     }
     
     private void GetPlayerName()
@@ -93,20 +95,20 @@ public class Game
         }
 
 
-        _player.Initialize(playerName);
+        _player.SetUp(playerName);
 
         Console.WriteLine($"Welcome, {_player.Name}, to this game");
     }
 
     private void CheckForLoadGame()
     {
-        if (SaveManager.SaveFileExists())
+        if (_saveManager.SaveFileExists())
         {
             Console.WriteLine("Save file found. Do you want to load the game? Y/N");
             string answer = Console.ReadLine();
             if (answer != null && answer.ToLower() == "y")
             {
-                SaveManager.LoadGame();
+                _saveManager.LoadGame();
             }
         }
         

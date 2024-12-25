@@ -6,19 +6,25 @@ namespace FirstGame;
 public class Commands
 {
     #region REFERENCES
-    
+
+    private Player _player;
     private Game _game;
     private GameMap _map;
     private SaveManager _saveManager;
     
     #endregion
     
-    #region CONSTRUCTOR
-    public Commands(Game game, GameMap map, SaveManager saveManager)
+    #region INITIALIZATION
+    public Commands(Game game)
     {
         _game = game;
+    }
+
+    public void Initialize(GameMap map, SaveManager saveManager, Player player)
+    {
         _map = map;
         _saveManager = saveManager;
+        _player = player;
     }
     
     #endregion
@@ -29,6 +35,11 @@ public class Commands
     {
         switch (command.ToLower())
         {
+            // Player Commants
+            case "who":
+                PlayerWho();
+                break;
+            
             // Map Commands
             case "east":
                 MoveCommand(Direction.East);
@@ -67,11 +78,21 @@ public class Commands
         }
     }
 
+    #region Player Commands
+
+    private void PlayerWho()
+    {
+        Console.WriteLine($"You are {_player.Name}!");
+    }
+    
+    #endregion
+    
     #region Map Commands
     
     private void MoveCommand(Direction direction)
     {
         _map.MovePlayer(direction);
+        
         Vector2Int playerPosition = _map.GetPlayerPosition();
         Console.WriteLine($"You are at {playerPosition.X}, {playerPosition.Y}");
         Console.WriteLine(CurrentLocationDescription());
@@ -89,25 +110,12 @@ public class Commands
 
     private void SaveGame()
     {
-        string savePath = SavePath();
-        string saveContent = "I'm saving this game!";
-
-        File.WriteAllText(savePath, saveContent);
-
+        _saveManager.SaveGame();
     }
 
     private void LoadGame()
     {
-        string savePath = SavePath();
-    }
-
-    private string SavePath()
-    {
-        string workingDirectory = Environment.CurrentDirectory;
-        string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
-        string fullPath = projectDirectory + @"\save.sgf";
-
-        return fullPath;
+        _saveManager.LoadGame();
     }
     
     #endregion

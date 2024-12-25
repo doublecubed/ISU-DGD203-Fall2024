@@ -5,14 +5,22 @@ public class SaveManager
     #region REFERENCES
     
     private Game _game;
+    private Player _player;
+    private GameMap _gameMap;
     
     #endregion
     
-    #region CONSTRUCTOR
+    #region INITIALIZATION
     
     public SaveManager(Game game)
     {
         _game = game;
+    }
+
+    public void Initialize(Player player, GameMap gameMap)
+    {
+        _player = player;
+        _gameMap = gameMap;
     }
     
     #endregion
@@ -22,7 +30,13 @@ public class SaveManager
     public void SaveGame()
     {
         string savePath = SavePath();
-        string saveContent = "I'm saving this game!";
+        
+        string playerName = _player.Name;
+        
+        Vector2Int playerPosition = _gameMap.GetPlayerPosition();
+        string playerPositionString = $"{playerPosition.X.ToString()},{playerPosition.Y.ToString()}";
+        
+        string saveContent = $"{playerName}{Environment.NewLine}{playerPositionString}";
 
         File.WriteAllText(savePath, saveContent);
 
@@ -38,9 +52,12 @@ public class SaveManager
         string savePath = SavePath();
         
         string[] saveContent = File.ReadAllLines(savePath);
-        foreach (string line in saveContent)
+        for (int i = 0; i < saveContent.Length; i++)
         {
-            Console.WriteLine(line);
+            string contentLine = saveContent[i];
+            
+            if (i == 0) _player.SetUp(contentLine);
+            if (i == 1) _gameMap.MovePlayer(ParseToVector2Int(contentLine));
         }
     }
     
@@ -51,6 +68,16 @@ public class SaveManager
         string fullPath = projectDirectory + @"\save.sgf";
 
         return fullPath;
+    }
+    
+    public Vector2Int ParseToVector2Int(string input)
+    {
+        string[] parts = input.Split(',');
+        return new Vector2Int
+        {
+            X = int.Parse(parts[0]),
+            Y = int.Parse(parts[1])
+        };
     }
     
     #endregion

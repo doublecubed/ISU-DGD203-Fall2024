@@ -9,7 +9,7 @@ namespace FirstGame
             Name = name;
         }
 
-        public void Initialize(string? name)
+        public void SetUp(string? name)
         {
             Name = name;
         }

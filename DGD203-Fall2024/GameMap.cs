@@ -54,17 +54,8 @@ public class GameMap
         _width = width;
         _height = height;
         _mapLocations = new Location[width, height];
-
-        if (_game.SaveManager.SaveFileExists())
-        {
-            // TODO: Load the locations from the save file
-        }
-        else
-        {
-            // TODO: Load the default locations
-        }
         
-        /* Initialize all locations with default values
+        // Initialize all locations with default values
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -72,7 +63,7 @@ public class GameMap
                 _mapLocations[x, y] = new Location();
             }
         }
-        */
+        
 
         // Set initial player position if valid
         if (IsValidPosition(startPosition))
@@ -111,15 +102,24 @@ public class GameMap
     public bool MovePlayer(Direction direction)
     {
         var newPosition = CalculateNewPosition(direction);
-        
-        if (IsValidPosition(newPosition) && _mapLocations[newPosition.X, newPosition.Y].IsAccessible)
+        return SetPlayerPosition(newPosition);
+    }
+
+    public bool MovePlayer(Vector2Int targetPosition)
+    {
+        return SetPlayerPosition(targetPosition);
+    }
+
+    private bool SetPlayerPosition(Vector2Int targetPosition)
+    {
+        if (IsValidPosition(targetPosition) && _mapLocations[targetPosition.X, targetPosition.Y].IsAccessible)
         {
-            _playerPosition = newPosition;
+            _playerPosition = targetPosition;
             return true;
         }
         return false;
     }
-
+    
     private Vector2Int CalculateNewPosition(Direction direction)
     {
         // switch chooses from the possible cases, and then does the code inside.
