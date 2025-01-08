@@ -39,6 +39,12 @@ public class Commands
             case "who":
                 PlayerWho();
                 break;
+            case "look":
+                LookCommand();
+                break;
+            case "interact":
+                InteractCommand();
+                break;
             
             // Map Commands
             case "east":
@@ -53,7 +59,20 @@ public class Commands
             case "south":
                 MoveCommand(Direction.South);
                 break;
+            case "e":
+                MoveCommand(Direction.East);
+                break;
+            case "n":
+                MoveCommand(Direction.North);
+                break;
+            case "w":
+                MoveCommand(Direction.West);
+                break;
+            case "s":
+                MoveCommand(Direction.South);
+                break;
 
+            
             // Inventory Commands
             
             // Multiple Choices
@@ -85,6 +104,16 @@ public class Commands
         Console.WriteLine($"You are {_player.Name}!");
     }
     
+    private void LookCommand()
+    {
+        Console.WriteLine(CurrentLocationDescription());
+    }
+
+    private void InteractCommand()
+    {
+        _map.InteractWithCurrentLocation();
+    }
+    
     #endregion
     
     #region Map Commands
@@ -95,13 +124,19 @@ public class Commands
         
         Vector2Int playerPosition = _map.GetPlayerPosition();
         Console.WriteLine($"You are at {playerPosition.X}, {playerPosition.Y}");
-        Console.WriteLine(CurrentLocationDescription());
+        Console.WriteLine($"You are in {CurrentLocationName()}");
+    }
+
+    private string CurrentLocationName()
+    {
+        string currentLocationName = _map.GetCurrentLocationName();
+        return currentLocationName;
     }
     
     private string CurrentLocationDescription()
     {
-        GameMap.Location currentLocation = _map.GetCurrentLocation();
-        return currentLocation.Description;
+        string currentLocationDescription = _map.GetCurrentLocationDescription();
+        return currentLocationDescription;
     }
     
     #endregion

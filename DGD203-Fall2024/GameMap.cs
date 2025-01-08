@@ -7,6 +7,7 @@ public class GameMap
     #region REFERENCES
 
     private Game _game;
+    private MapLocations _locations;
     
     #endregion
     
@@ -18,28 +19,6 @@ public class GameMap
     private readonly int _width;
     private readonly int _height;
     private Vector2Int _playerPosition;
-    private readonly Location[,] _mapLocations;
-
-    #endregion
-    
-    #region INTERNAL CLASSES
-    public class Location
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool IsAccessible { get; set; }
-        
-        public List<Item> Items { get; set; }
-        public Dictionary<string, string> InteractiveObjects { get; set; }
-
-        public Location(string description = "There's nothing here", bool isAccessible = true)
-        {
-            Description = description;
-            IsAccessible = isAccessible;
-            InteractiveObjects = new Dictionary<string, string>();
-            Items = new List<Item>();
-        }
-    }
 
     #endregion
     
@@ -53,17 +32,9 @@ public class GameMap
 
         _width = width;
         _height = height;
-        _mapLocations = new Location[width, height];
         
         // Initialize all locations with default values
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                _mapLocations[x, y] = new Location();
-            }
-        }
-        
+        _locations = new MapLocations(this);
 
         // Set initial player position if valid
         if (IsValidPosition(startPosition))
@@ -112,7 +83,7 @@ public class GameMap
 
     private bool SetPlayerPosition(Vector2Int targetPosition)
     {
-        if (IsValidPosition(targetPosition) && _mapLocations[targetPosition.X, targetPosition.Y].IsAccessible)
+        if (IsValidPosition(targetPosition))
         {
             _playerPosition = targetPosition;
             return true;
@@ -156,33 +127,39 @@ public class GameMap
                position.Y >= 0 && position.Y < _height;
     }
 
-    public Location GetCurrentLocation()
+    public string GetCurrentLocationName()
     {
-        return _mapLocations[_playerPosition.X, _playerPosition.Y];
+        // The better way of doing this is presented in the method below
+        if (_locations.Locations.ContainsKey(_playerPosition))
+        {
+            return _locations.Locations[_playerPosition].Name;
+        }
+
+        return "the middle of nowhere.";
+    }
+    
+    public string GetCurrentLocationDescription()
+    {
+        // This is the better way of doing that thing above
+        if (_locations.Locations.TryGetValue(_playerPosition, out MapLocationData location))
+        {
+            return location.Description;
+        }
+
+        return "I told you, there is nothing here!";
     }
 
-    public void SetLocationDescription(Vector2Int position, string description)
+    public void InteractWithCurrentLocation()
     {
-        if (IsValidPosition(position))
+        if (!_locations.Locations.TryGetValue(_playerPosition, out MapLocationData location) 
+            || !location.IsInteractable)
         {
-            _mapLocations[position.X, position.Y].Description = description;
+            Console.WriteLine("There is nothing to do here");
+            return;
         }
-    }
 
-    public void SetLocationAccessibility(Vector2Int position, bool isAccessible)
-    {
-        if (IsValidPosition(position))
-        {
-            _mapLocations[position.X, position.Y].IsAccessible = isAccessible;
-        }
-    }
-
-    public void AddInteractiveObject(Vector2Int position, string objectName, string description)
-    {
-        if (IsValidPosition(position))
-        {
-            _mapLocations[position.X, position.Y].InteractiveObjects[objectName] = description;
-        }
+        Interaction interaction = location.Interaction;
+        interaction.Choose();
     }
     
     #endregion
@@ -208,11 +185,3 @@ public enum Direction
     Back
 }
 
-public struct MapLocationLoadData
-{
-    public Vector2Int Coordinates;
-    public string Name;
-    public string Description;
-    public bool IsAccessible;
-    public Item[] Items;
-}
