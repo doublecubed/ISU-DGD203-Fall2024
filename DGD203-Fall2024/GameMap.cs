@@ -121,10 +121,30 @@ public class GameMap
         return newPosition;
     }
 
-    private bool IsValidPosition(Vector2Int position)
+    private bool IsValidPosition(Vector2Int targetPosition)
     {
-        return position.X >= 0 && position.X < _width && 
-               position.Y >= 0 && position.Y < _height;
+        // Check if inside map bounds, if not return false immediately
+        bool isWithinMapBounds =  targetPosition.X >= 0 && targetPosition.X < _width && 
+               targetPosition.Y >= 0 && targetPosition.Y < _height;
+        if (!isWithinMapBounds) return false;
+
+        // Check if the current location exists, and whether it allows moving in the direction
+        if (_locations.Locations.TryGetValue(_playerPosition, out MapLocationData mapLocation))
+        {
+            Console.WriteLine("Location found, processing input");
+            Vector2Int currentPosition = mapLocation.Coordinates;
+            Vector2Int directionVector = new Vector2Int();
+            directionVector.X = targetPosition.X - currentPosition.X;
+            directionVector.Y = targetPosition.Y - currentPosition.Y;
+
+            Direction moveDirection = CalculateDirection(directionVector);
+            int checkIndex = (int)moveDirection;
+
+            return mapLocation.AllowsTravel[checkIndex];
+        }
+        
+        // if everything else is passed, just return true
+        return true;
     }
 
     public string GetCurrentLocationName()
@@ -160,6 +180,15 @@ public class GameMap
 
         Interaction interaction = location.Interaction;
         interaction.Choose();
+    }
+
+    private Direction CalculateDirection(Vector2Int directionVector)
+    {
+        if (directionVector.X == 1 && directionVector.Y == 0) return Direction.East;
+        if (directionVector.X == 0 && directionVector.Y == 1) return Direction.North;
+        if (directionVector.X == -1 && directionVector.Y == 0) return Direction.West;
+        if (directionVector.X == 0 && directionVector.Y == -1) return Direction.South;
+        return Direction.North;
     }
     
     #endregion

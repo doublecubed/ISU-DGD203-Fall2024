@@ -39,14 +39,20 @@ public class Commands
             case "who":
                 PlayerWho();
                 break;
+            case "where":
+                PlayerWhere();
+                break;
             case "look":
                 LookCommand();
                 break;
             case "interact":
                 InteractCommand();
                 break;
+            case "help":
+                HelpCommand();
+                break;
             
-            // Map Commands
+            // Move Commands
             case "east":
                 MoveCommand(Direction.East);
                 break;
@@ -103,6 +109,13 @@ public class Commands
     {
         Console.WriteLine($"You are {_player.Name}!");
     }
+
+    private void PlayerWhere()
+    {
+        Vector2Int position = CurrentLocationCoordinates();
+        Console.WriteLine($"You are at {position.X}, {position.Y}.");
+        Console.WriteLine($"You are in {CurrentLocationName()}!");
+    }
     
     private void LookCommand()
     {
@@ -113,10 +126,15 @@ public class Commands
     {
         _map.InteractWithCurrentLocation();
     }
+
+    private void HelpCommand()
+    {
+        Console.WriteLine("Here are the commands you can use:\nwho\n\twhere\nlook\ninteract\nhelp\nnorth\nsouth\n");
+    }
     
     #endregion
     
-    #region Map Commands
+    #region Move Commands
     
     private void MoveCommand(Direction direction)
     {
@@ -127,6 +145,11 @@ public class Commands
         Console.WriteLine($"You are in {CurrentLocationName()}");
     }
 
+    private Vector2Int CurrentLocationCoordinates()
+    {
+        return _map.GetPlayerPosition();
+    }
+    
     private string CurrentLocationName()
     {
         string currentLocationName = _map.GetCurrentLocationName();

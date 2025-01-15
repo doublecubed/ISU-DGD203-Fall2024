@@ -56,6 +56,8 @@ public class MapLocations
         
         Interaction Merchant  = GenerateMerchant();
         emeraldCity.Interaction = Merchant;
+
+        emeraldCity.AllowsTravel = new bool[] { true, false, true, true };
         
         Locations[coordinates] = emeraldCity;
     }
@@ -79,13 +81,18 @@ public class MapLocations
     {
         string merchantDescription = "There is a merchant here. He looks at you with a sparkle in " +
                                      "his eyes, 'What would you like to buy?' he asks";
-        
+
         string[] merchantChoices = new string[3];
         merchantChoices[0] = "Buy Apple (1 coin)";
         merchantChoices[1] = "Buy Sword (2 coins)";
         merchantChoices[2] = "Leave";
+
+        string[] merchantResponses = new string[3];
+        merchantResponses[0] = "Here is an apple, good person";
+        merchantResponses[1] = "You don't have enough money, you scum";
+        merchantResponses[2] = "Get to tha choppa";
         
-        Interaction merchant = new Interaction(merchantDescription, merchantChoices);
+    Interaction merchant = new MerchantInteraction(merchantDescription, merchantChoices, merchantResponses, _map);
 
 
 
@@ -106,5 +113,6 @@ public struct MapLocationData
     public bool IsInteractable;
     public Interaction Interaction;
     public Item[] Items;
+    public bool[] AllowsTravel;
 }
 
